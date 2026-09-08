@@ -6,7 +6,7 @@ kind: ApplicationSet
 
 metadata:
   # The name of this ApplicationSet in Argo CD.
-  name: normal-apps
+  name: security-apps
 
   # The namespace where the Argo CD controller is running.
   namespace: argocd
