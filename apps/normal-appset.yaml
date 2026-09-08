@@ -7,7 +7,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/<your-user>/<your-repo>
+        repoURL: https://github.com/ssimon003/schoolpj.git
         revision: HEAD
         directories:
           - path: charts/normal/*        # auto-discovers every subfolder
@@ -17,7 +17,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/<your-user>/<your-repo>
+        repoURL: https://github.com/ssimon003/schoolpj.git
         targetRevision: HEAD
         path: "{{path}}"                 # each app points to its own folder
       destination:
