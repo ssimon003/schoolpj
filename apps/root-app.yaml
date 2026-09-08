@@ -1,19 +1,88 @@
-#this one watches the folder apps for updates
+# ==============================================================================
+# ARGO CD ROOT APPLICATION ("App-of-Apps" Pattern)
+# ==============================================================================
+#
+# WHAT IS THIS FILE?
+# This file defines an Argo CD "Application". In the GitOps world, Git is the
+# single source of truth for everything running in your Kubernetes cluster.
+#
+# THE "APP-OF-APPS" PATTERN:
+# Instead of manually deploying dozens of YAML files with `kubectl apply`, we create
+# ONE master "root" application. This root application watches the `apps/` folder
+# in our Git repository. Whenever we add, modify, or delete application definitions
+# (like ApplicationSets) inside `apps/`, Argo CD automatically applies those changes!
+#
+# HOW TO BOOTSTRAP:
+# To start the entire cluster setup, you only need to run this command once:
+#   kubectl apply -f apps/root-app.yaml
+# ==============================================================================
+
+# apiVersion specifies the API group and version for Argo CD custom resources.
 apiVersion: argoproj.io/v1alpha1
+
+# kind tells Kubernetes what type of resource this is.
+# An "Application" CRD (Custom Resource Definition) manages the link between
+# a Git repository (source) and a Kubernetes cluster (destination).
 kind: Application
+
 metadata:
+  # The display name of this application in the Argo CD Web UI and CLI.
   name: root-app
+
+  # The Kubernetes namespace where Argo CD's control plane is installed.
+  # This Application object itself will live in the 'argocd' namespace.
   namespace: argocd
+
 spec:
+  # The Argo CD project this application belongs to.
+  # "default" is built into Argo CD and has no deployment restrictions.
   project: default
+
+  # --------------------------------------------------------------------------
+  # SOURCE: Where are the files located in Git?
+  # --------------------------------------------------------------------------
   source:
+    # The URL of your Git repository where your code and manifests live.
     repoURL: https://github.com/ssimon003/schoolpj.git
+
+    # The Git branch, tag, or commit SHA to track.
+    # 'HEAD' refers to the most recent commit on the repository's default branch (main).
     targetRevision: HEAD
-    path: apps                           # watches the whole apps/ folder
+
+    # The folder inside the repository that Argo CD should monitor.
+    # Argo CD reads all Kubernetes manifests inside 'apps/' (e.g., normal-appset.yaml)
+    # and deploys them to the cluster.
+    path: apps
+
+  # --------------------------------------------------------------------------
+  # DESTINATION: Where should these resources be deployed in the cluster?
+  # --------------------------------------------------------------------------
   destination:
+    # The Kubernetes API server address.
+    # 'https://kubernetes.default.svc' is the internal cluster address, meaning:
+    # "Deploy these resources into the local cluster where Argo CD is running."
     server: https://kubernetes.default.svc
+
+    # The namespace in Kubernetes where these manifests should be created.
+    # Since the manifests inside 'apps/' are ApplicationSets for Argo CD,
+    # they must be deployed into the 'argocd' namespace.
     namespace: argocd
+
+  # --------------------------------------------------------------------------
+  # SYNC POLICY: How should Argo CD keep the cluster in sync with Git?
+  # --------------------------------------------------------------------------
   syncPolicy:
+    # automated means Argo CD will automatically sync whenever changes are pushed
+    # to Git, without requiring someone to click the "Sync" button in the Web UI.
     automated:
+      # prune: true
+      # If you delete a YAML file from the 'apps/' folder in Git, Argo CD will
+      # automatically delete the corresponding resource from the Kubernetes cluster.
+      # This prevents leftover or "orphaned" resources.
       prune: true
+
+      # selfHeal: true
+      # If someone makes manual changes to the cluster using 'kubectl' (cluster drift),
+      # Argo CD will detect that the cluster doesn't match Git, and will automatically
+      # revert the cluster back to the state defined in Git!
       selfHeal: true

@@ -1,7 +1,46 @@
+# ==============================================================================
+# HELM CHART DEFINITION: NGINX Wrapper Chart
+# ==============================================================================
+#
+# WHAT IS HELM?
+# Helm is the package manager for Kubernetes (similar to 'apt' on Ubuntu or
+# 'npm' in Node.js). A collection of Kubernetes manifests packaged together
+# is called a Helm "Chart".
+#
+# WHAT IS THIS FILE? (Chart.yaml)
+# Every Helm chart requires a 'Chart.yaml' file. It acts as the chart's "ID card"
+# or manifest, specifying the chart's name, version, and any dependencies.
+#
+# THE "WRAPPER CHART" (UMBRELLA CHART) PATTERN:
+# Instead of manually writing hundreds of lines of complex Kubernetes manifests
+# (Deployments, Services, ConfigMaps, RBAC) from scratch, we create a lightweight
+# "wrapper chart".
+# This wrapper declares the official, battle-tested Bitnami NGINX chart as a
+# dependency. We can then easily customize its behavior using 'values.yaml'.
+# ==============================================================================
+
+# apiVersion: v2 indicates that this is a Helm 3 chart (the modern Helm version).
+# (Older Helm 2 charts used 'v1').
 apiVersion: v2
+
+# The name of our custom wrapper chart.
 name: nginx
+
+# The version of THIS wrapper chart, following Semantic Versioning (SemVer: Major.Minor.Patch).
+# If you make changes to how you wrap or configure this chart, you bump this number.
 version: 0.1.0
+
+# ------------------------------------------------------------------------------
+# DEPENDENCIES: External Helm charts that this wrapper chart pulls in and uses.
+# ------------------------------------------------------------------------------
 dependencies:
+  # The name of the upstream chart we want to include.
   - name: nginx
+
+    # The exact version of the Bitnami NGINX chart to download.
+    # Pinning a specific version ensures reproducible builds and avoids unexpected
+    # breaking changes when upstream charts are updated.
     version: "25.1.10"
+
+    # The Helm repository URL where Helm downloads the Bitnami NGINX chart package.
     repository: https://charts.bitnami.com/bitnami

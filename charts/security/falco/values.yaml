@@ -1,8 +1,41 @@
-# charts/normal/nginx/Chart.yaml
-apiVersion: v2
-name: nginx
-version: 0.1.0
-dependencies:
-  - name: nginx
-    version: "25.1.10"
-    repository: https://charts.bitnami.com/bitnami
+# ==============================================================================
+# HELM VALUES: Custom Configuration for Falco Runtime Security
+# ==============================================================================
+#
+# WHAT IS THIS FILE? (values.yaml)
+# In Helm, 'values.yaml' defines the configuration parameters that are injected
+# into the chart's templates. This is where you configure how Falco runs, what
+# rules it uses, and how it reports security alerts.
+#
+# WHY ARE VALUES UNDER THE 'falco:' KEY?
+# In 'Chart.yaml', we declared 'falco' as a subchart dependency. In Helm, all
+# configuration intended for that subchart must be placed under a matching
+# top-level key ('falco:').
+#
+# BEGINNER NOTE:
+# A 'values.yaml' file contains application configuration options (like drivers,
+# log settings, and feature flags), whereas 'Chart.yaml' contains package metadata
+# (like chart name, version, and repository URLs).
+# ==============================================================================
+
+falco:
+  # ----------------------------------------------------------------------------
+  # DRIVER SELECTION: How Falco monitors system calls
+  # ----------------------------------------------------------------------------
+  driver:
+    # 'modern_ebpf' is the recommended driver for modern Linux and KinD clusters.
+    # eBPF (Extended Berkeley Packet Filter) lets Falco safely monitor kernel events
+    # without needing to compile or load a custom kernel module on the host machine.
+    kind: modern_ebpf
+
+  # ----------------------------------------------------------------------------
+  # LOGGING & OUTPUT FORMATTING
+  # ----------------------------------------------------------------------------
+  # Output alerts in structured JSON format. This makes it easy for SIEM tools,
+  # log aggregators (like Elasticsearch, Loki, or Fluentd), or automated scripts
+  # to parse security alerts.
+  json_output: true
+
+  # Log verbosity level ('info', 'debug', 'warn', 'error').
+  # 'info' gives you a balanced amount of operational logs without overwhelming detail.
+  log_level: info

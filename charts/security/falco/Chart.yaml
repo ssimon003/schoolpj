@@ -1,0 +1,48 @@
+# ==============================================================================
+# HELM CHART DEFINITION: Falco Security Wrapper Chart
+# ==============================================================================
+#
+# WHAT IS FALCO?
+# Falco (by the Cloud Native Computing Foundation - CNCF) is a runtime security
+# monitoring tool for Kubernetes and Linux. It monitors system calls at the Linux
+# kernel level in real-time to alert you if something suspicious happens inside
+# your cluster (such as a pod unexpectedly opening a shell, reading sensitive
+# files like /etc/shadow, or making unexpected outbound network connections).
+#
+# WHY IS THIS CHART IN 'charts/security/'?
+# Following the separation of concerns design:
+# - 'charts/normal/': Standard business workloads (e.g. NGINX, web services).
+# - 'charts/security/': Monitoring, auditing, and intrusion detection (e.g. Falco).
+# - 'charts/unsafe/': Intentionally vulnerable applications for penetration testing.
+#
+# WHAT IS THIS FILE? (Chart.yaml)
+# Every Helm chart requires a 'Chart.yaml' file. It acts as the metadata definition
+# for the chart package. Just like our NGINX chart, this chart acts as an umbrella /
+# wrapper chart that pulls in the official upstream Falco Helm chart as a dependency.
+# ==============================================================================
+
+# apiVersion: v2 specifies that this is a Helm 3 chart.
+apiVersion: v2
+
+# The name of our custom security chart wrapper.
+name: falco
+
+# The version of THIS wrapper chart, using Semantic Versioning (SemVer: Major.Minor.Patch).
+version: 0.1.0
+
+# A short summary of what this Helm chart installs.
+description: A Helm wrapper chart for deploying Falco runtime security monitoring.
+
+# ------------------------------------------------------------------------------
+# DEPENDENCIES: Upstream Falco Helm chart repository.
+# ------------------------------------------------------------------------------
+dependencies:
+  # The name of the official Falco chart.
+  - name: falco
+
+    # The version of the upstream Falco chart.
+    # Pinning a specific chart version ensures stability and reproducibility.
+    version: "4.20.1"
+
+    # The official Falcosecurity community Helm chart repository.
+    repository: https://falcosecurity.github.io/charts

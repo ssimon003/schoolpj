@@ -1,4 +1,34 @@
+# ==============================================================================
+# HELM VALUES: Custom Configuration for NGINX
+# ==============================================================================
+#
+# WHAT IS THIS FILE? (values.yaml)
+# In Helm, 'values.yaml' defines the settings and parameters used to customize
+# the chart templates. Helm templates contain placeholders (like variables),
+# and this file provides the values that fill in those placeholders!
+#
+# WHY ARE SETTINGS UNDER THE 'nginx:' KEY?
+# In 'Chart.yaml', we declared 'nginx' as a subchart dependency. In Helm,
+# to pass configuration options to a dependency, you place those settings
+# directly under a top-level key matching the dependency's name ('nginx:').
+# ==============================================================================
+
 nginx:
+  # ----------------------------------------------------------------------------
+  # REPLICAS: How many copies of the NGINX container should run?
+  # ----------------------------------------------------------------------------
+  # 'replicaCount: 1' means Kubernetes will keep exactly 1 NGINX Pod running.
+  # - In production, you might set this to 2 or 3 for high availability and failover.
+  # - For local testing in KinD (Kubernetes in Docker), 1 replica saves memory and CPU.
   replicaCount: 1
+
+  # ----------------------------------------------------------------------------
+  # SERVICE: How should NGINX be exposed on the network?
+  # ----------------------------------------------------------------------------
   service:
+    # Service 'type' determines how the application is reachable:
+    # - ClusterIP (default): Gives NGINX an internal IP address reachable ONLY
+    #   from inside the Kubernetes cluster. This is the most secure option.
+    # - NodePort: Exposes NGINX on a static port on each cluster node's IP.
+    # - LoadBalancer: Requests an external cloud load balancer (e.g. AWS/GCP/Azure).
     type: ClusterIP

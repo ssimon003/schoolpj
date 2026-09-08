@@ -1,31 +1,101 @@
-# It autodiscovers the new folders inside charts, so the addition of new application in folder normal is automatic.
+# ==============================================================================
+# ARGO CD APPLICATIONSET: Auto-Discovery for "Normal" Workloads
+# ==============================================================================
+#
+# WHAT IS AN APPLICATIONSET?
+# In Argo CD, an "Application" manages a single app. An "ApplicationSet" is like
+# an automated factory: it uses templates and rules to generate multiple
+# Applications dynamically!
+#
+# WHY USE AN APPLICATIONSET? (The Magic of Auto-Discovery)
+# Without this, every time you want to deploy a new microservice or Helm chart,
+# you would have to write and apply a new Application YAML file.
+# With an ApplicationSet using the "Git Directory Generator", you simply drop a
+# new folder into 'charts/normal/' (e.g., charts/normal/redis), push to Git, and
+# Argo CD automatically detects it, generates an Application, and deploys it!
+#
+# HOW THIS RELATES TO THE ROOT APPLICATION:
+# 1. 'apps/root-app.yaml' deploys this file ('apps/normal-appset.yaml').
+# 2. This ApplicationSet scans 'charts/normal/*' in Git.
+# 3. For every folder found (like 'charts/normal/nginx'), it generates an
+#    independent Application and deploys it to the 'normal' namespace.
+# ==============================================================================
+
+# apiVersion specifies the API group and version for Argo CD custom resources.
 apiVersion: argoproj.io/v1alpha1
+
+# kind tells Kubernetes this is an ApplicationSet resource.
 kind: ApplicationSet
+
 metadata:
+  # The name of this ApplicationSet in Argo CD.
   name: normal-apps
+
+  # The namespace where the Argo CD controller is running.
   namespace: argocd
+
 spec:
+  # --------------------------------------------------------------------------
+  # GENERATORS: How does Argo CD find what to deploy?
+  # --------------------------------------------------------------------------
   generators:
+    # The 'git' generator scans a Git repository for matching directories.
     - git:
+        # The Git repository to scan for application folders.
         repoURL: https://github.com/ssimon003/schoolpj.git
+
+        # The Git branch or revision to scan ('HEAD' = latest commit on main).
         revision: HEAD
+
         directories:
-          - path: charts/normal/*        # auto-discovers every subfolder
+          # Wildcard path: matches every subdirectory under 'charts/normal/'.
+          # For example, if 'charts/normal/nginx' exists, Argo CD discovers it.
+          # If you add 'charts/normal/apache' tomorrow, Argo CD will discover that too!
+          - path: charts/normal/*
+
+  # --------------------------------------------------------------------------
+  # TEMPLATE: The blueprint used to create an Application for each folder found.
+  # --------------------------------------------------------------------------
   template:
     metadata:
-      name: "{{path.basename}}"          # app name = folder name (e.g. nginx, apache)
+      # Dynamic naming using template parameters:
+      # '{{path.basename}}' extracts the folder's name only.
+      # For 'charts/normal/nginx', {{path.basename}} becomes 'nginx'.
+      # Therefore, the created Application will be named 'nginx'.
+      name: "{{path.basename}}"
+
     spec:
+      # The Argo CD project this generated application belongs to.
       project: default
+
+      # Where Argo CD should fetch the chart/manifests for this specific app:
       source:
         repoURL: https://github.com/ssimon003/schoolpj.git
         targetRevision: HEAD
-        path: "{{path}}"                 # each app points to its own folder
+
+        # '{{path}}' is replaced with the full folder path (e.g., 'charts/normal/nginx').
+        # Argo CD will look inside that specific folder to find the Helm chart.
+        path: "{{path}}"
+
+      # Where to deploy this application:
       destination:
+        # Deploy into the local Kubernetes cluster (where Argo CD is running).
         server: https://kubernetes.default.svc
+
+        # The target namespace for standard/normal applications.
+        # This keeps normal apps separate from system tools or security scanners.
         namespace: normal
+
+      # Synchronization and self-healing rules:
       syncPolicy:
         automated:
+          # Automatically delete cluster resources when their YAML is removed from Git.
           prune: true
+
+          # Automatically revert any manual 'kubectl' changes back to the Git state.
           selfHeal: true
+
         syncOptions:
+          # If the target namespace ('normal') does not exist yet in Kubernetes,
+          # Argo CD will automatically create it before deploying the app.
           - CreateNamespace=true
