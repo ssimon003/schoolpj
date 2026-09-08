@@ -42,7 +42,7 @@ dependencies:
 
     # The version of the upstream Falco chart.
     # Pinning a specific chart version ensures stability and reproducibility.
-    version: "4.20.1"
+    version: "9.1.0"
 
     # The official Falcosecurity community Helm chart repository.
     repository: https://falcosecurity.github.io/charts
