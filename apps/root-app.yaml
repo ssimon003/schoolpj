@@ -1,0 +1,19 @@
+#this one watches the folder apps for updates
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<your-user>/<your-repo>
+    targetRevision: HEAD
+    path: apps                           # 👈 watches the whole apps/ folder
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

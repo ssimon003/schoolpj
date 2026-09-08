@@ -1,0 +1,7 @@
+apiVersion: v2
+name: nginx
+version: 0.1.0
+dependencies:
+  - name: nginx
+    version: "25.1.10"
+    repository: https://charts.bitnami.com/bitnami
